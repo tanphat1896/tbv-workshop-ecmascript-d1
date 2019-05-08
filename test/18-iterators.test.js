@@ -1,20 +1,30 @@
 test('can get the iterator from an array', () => {
   const array = [1, 2, 3]
   // DON'T PEAK AT THE NEXT TESTS!
-  const iterator = '?' // how do you get the iterator?
+  const iterator = {
+    data: array,
+    currentIdx: 0,
+    next() {
+      const value = this.data[currentIdx]
+      if (value === undefined) {
+        return { value, done: true }
+      }
+      return { value, done: false }
+    }
+  }
   expect(typeof iterator.next === 'function').toBe(true)
 })
 
 test('can next() the iterator multiple times', () => {
   const string = 'hello' // <-- YES, this is iterable!
   const iterator = string[Symbol.iterator]()
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
-  expect(iterator.next()).toEqual( /* ENTER YOUR ANSWER HERE */ )
+  expect(iterator.next()).toEqual({ value: 'h', done: false })
+  expect(iterator.next()).toEqual({ value: 'e', done: false })
+  expect(iterator.next()).toEqual({ value: 'l', done: false })
+  expect(iterator.next()).toEqual({ value: 'l', done: false })
+  expect(iterator.next()).toEqual({ value: 'o', done: false })
+  expect(iterator.next()).toEqual({ value: undefined, done: true })
+  expect(iterator.next()).toEqual({ value: undefined, done: true })
 })
 
 test('can iterate over an interable with for .. of', () => {
@@ -24,6 +34,9 @@ test('can iterate over an interable with for .. of', () => {
   // that gets the sum of
   // all items in the array
   // ex: `sum += val`
+  for (let val of array) {
+    sum += val
+  }
   expect(sum).toBe(6)
 })
 
@@ -31,11 +44,11 @@ test('can use the ... operator on the iterator', () => {
   const set = new Set([1, 2, 2, 3])
   // use destructuring and the ... operator to create a
   // `rest` variable that only has the last two items.
-  const [rest] = set
+  const [rest] = [[...set].slice(1)]
   expect(rest).toEqual([2, 3])
 })
 
-test.skip('can create a custom iterator', () => {
+test('can create a custom iterator', () => {
   const randomRandomNumbersGenerator = {
     max: 20,
     min: 10,
@@ -44,7 +57,21 @@ test.skip('can create a custom iterator', () => {
     // within the min and max which are each random within the min
     // and max.
     // For example: [14, 18, 16, 14, 11, 19, 16, 15, 19, 18, 15]
-    // Do it without using a generator function
+    // Do it without using a generator function,
+    [Symbol.iterator]() {
+      const randomInRange = () => Math.floor(Math.random() * (this.max - this.min)) + this.min
+      const length = randomInRange()
+      const data = new Array(length)
+      data.fill(randomInRange())
+
+      let next = 0
+      return {
+        next() {
+          const value = data[next++]
+          return { value,  done: value === undefined }
+        }
+      }
+    }
   }
 
   expect(iteratorWorks()).toBe(true)
@@ -62,11 +89,20 @@ test.skip('can create a custom iterator', () => {
   }
 })
 
-test.skip('can create a custom iterator with a generator', () => {
+test('can create a custom iterator with a generator', () => {
   const randomRandomNumbersGenerator = {
     max: 20,
     min: 10,
     // rewrite the previous example as a generator function
+    randomInRange() {
+      return Math.floor(Math.random() * (this.max - this.min)) + this.min
+    },
+    [Symbol.iterator]: function* () {
+      const length = this.randomInRange()
+      const data = new Array(length)
+      data.fill(this.randomInRange())
+      
+    }
   }
 
   expect(iteratorWorks()).toBe(true)
