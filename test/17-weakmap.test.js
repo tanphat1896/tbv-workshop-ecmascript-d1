@@ -17,17 +17,16 @@ test(`should enable private members in classes`, () => {
   // If you make it this far, write a class with private member variables, using WeakMaps
   class Person {
     constructor(name, age) {
-      this.fields = new WeakMap()
-      this.fields.set({ key: 'name' }, name)
-      this.fields.set({ key: 'age' }, age)
+      this.props = new WeakMap()
+      this.props.set(this, { name, age })
     }
 
     getName() {
-      return this.fields.get({ key: 'name' })
+      return this.props.get(this).name
     }
 
     getAge() {
-      return this.fields.get({ key: 'age' })
+      return this.props.get(this).age
     }
   }
 

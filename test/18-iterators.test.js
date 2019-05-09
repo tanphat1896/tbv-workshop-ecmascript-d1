@@ -6,10 +6,7 @@ test('can get the iterator from an array', () => {
     currentIdx: 0,
     next() {
       const value = this.data[currentIdx]
-      if (value === undefined) {
-        return { value, done: true }
-      }
-      return { value, done: false }
+      return { value, done: value === undefined }
     }
   }
   expect(typeof iterator.next === 'function').toBe(true)
@@ -61,8 +58,8 @@ test('can create a custom iterator', () => {
     [Symbol.iterator]() {
       const randomInRange = () => Math.floor(Math.random() * (this.max - this.min)) + this.min
       const length = randomInRange()
-      const data = new Array(length)
-      data.fill(randomInRange())
+      const data = Array.from({ length }, () => randomInRange())
+      console.log(data)
 
       let next = 0
       return {
@@ -99,9 +96,10 @@ test('can create a custom iterator with a generator', () => {
     },
     [Symbol.iterator]: function* () {
       const length = this.randomInRange()
-      const data = new Array(length)
-      data.fill(this.randomInRange())
-      
+      const data = Array.from({ length }, () => this.randomInRange())
+      for (let datum of data) {
+        yield datum
+      }
     }
   }
 
